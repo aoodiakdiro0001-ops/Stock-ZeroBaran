@@ -1,0 +1,112 @@
+# ===================================================================
+# Stock-ZeroBaran — GitHub Actions Workflow (Cron مجاني)
+# المؤلف: Baran Avisat  |  Baranavisat@gmail.com  |  00905313263722
+# ===================================================================
+# يُشغّل فحص المخزون يومياً + إمكانية التشغيل اليدوي
+# مجاني 100% ضمن حدود GitHub Actions للـ Public/Private repos
+# ===================================================================
+name: Stock-ZeroBaran Daily Inventory Check
+
+on:
+  schedule:
+    # كل يوم الساعة 08:00 UTC (تقريباً 11:00 بتوقيت بغداد)
+    # ملاحظة: GitHub قد يؤخر المجدول قليلاً عن الوقت المحدد
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+    inputs:
+      force_full_check:
+        description: 'تشغيل فحص كامل بكل الطبقات'
+        required: false
+        default: 'true'
+        type: choice
+        options: ['true', 'false']
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: '3.11'
+  AI_ENGINE: ${{ vars.AI_ENGINE || 'gemini' }}
+  TIMEZONE: ${{ vars.TIMEZONE || 'Asia/Baghdad' }}
+
+jobs:
+  inventory-check:
+    name: فحص المخزون والتنبؤ
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # ----------------------------------------------------------------
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      # ----------------------------------------------------------------
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: 'requirements.txt'
+
+      # ----------------------------------------------------------------
+      - name: 📦 Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytz
+
+      # ----------------------------------------------------------------
+      - name: 🔧 Create .env from Secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          cat > .env << EOF
+          SUPABASE_URL=${SUPABASE_URL}
+          SUPABASE_KEY=${SUPABASE_KEY}
+          GEMINI_API_KEY=${GEMINI_API_KEY}
+          GROQ_API_KEY=${GROQ_API_KEY}
+          AI_ENGINE=${AI_ENGINE}
+          TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+          TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+          TIMEZONE=${TIMEZONE}
+          ALERTS_ENABLED=true
+          LOG_LEVEL=INFO
+          EOF
+          echo "✅ تم إنشاء ملف .env"
+
+      # ----------------------------------------------------------------
+      - name: 🌱 Seed Sample Data (optional — skip in production)
+        if: ${{ github.event.inputs.force_full_check == 'true' || github.event_name == 'schedule' }}
+        run: |
+          echo "ℹ️ تخطّي تعبئة البيانات في الإنتاج — استخدم scripts/seed_sample_data.py يدوياً عند الحاجة."
+
+      # ----------------------------------------------------------------
+      - name: ▶️ Run Inventory Check
+        run: |
+          python scripts/run_inventory_check.py
+
+      # ----------------------------------------------------------------
+      - name: 📤 Upload Logs Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stockzerobaran-logs-${{ github.run_id }}
+          path: logs/
+          retention-days: 7
+
+      # ----------------------------------------------------------------
+      - name: 📊 Summary
+        if: always()
+        run: |
+          echo "## 📦 Stock-ZeroBaran — تقرير الفحص" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ اكتمل فحص المخزون بنجاح." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**المؤلف:** Baran Avisat" >> $GITHUB_STEP_SUMMARY
+          echo "**البريد:** Baranavisat@gmail.com" >> $GITHUB_STEP_SUMMARY
+          echo "**الواتساب:** 00905313263722" >> $GITHUB_STEP_SUMMARY

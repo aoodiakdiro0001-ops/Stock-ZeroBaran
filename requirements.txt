@@ -1,0 +1,41 @@
+# ===================================================================
+# Stock-ZeroBaran — متطلبات التشغيل
+# جميع المكتبات مجانية ومفتوحة المصدر 100%
+# ===================================================================
+
+# --- الطبقة الأساسية: المعالجة والحسابات ---
+pandas==2.2.2
+numpy==1.26.4
+python-dateutil==2.9.0
+pytz==2024.1
+
+# --- طبقة قاعدة البيانات: Supabase ---
+supabase==2.7.4
+postgrest==0.16.9
+gotrue==2.9.0
+realtime==2.0.0
+storage3==0.8.0
+httpx==0.27.0
+
+# --- العقل التنبؤي: Google Gemini API ---
+google-generativeai==0.7.2
+
+# --- محرك Groq كبديل مجاني (Free Tier) ---
+groq==0.11.0
+
+# --- طبقة التنبيهات: Telegram Bot API ---
+python-telegram-bot==21.3
+requests==2.32.3
+
+# --- لوحة التحكم: Streamlit Dashboard ---
+streamlit==1.36.0
+plotly==5.22.0
+altair==5.3.0
+
+# --- أدوات مساعدة ---
+python-dotenv==1.0.1
+tabulate==0.9.0
+colorlog==6.8.2
+tenacity==8.3.0
+pydantic==2.7.4
+pydantic-settings==2.3.4

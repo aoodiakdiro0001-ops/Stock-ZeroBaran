@@ -1,0 +1,43 @@
+# --- بيئة ---
+.env
+.env.local
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+ENV/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# --- البيانات الحساسة ---
+secrets.json
+credentials.json
+*.key
+*.pem
+
+# --- السجلات ---
+logs/
+*.log
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# --- بيانات وقت التشغيل ---
+data/runtime/
+data/cache/
+*.db
+*.sqlite3
+
+# --- مخرجات التنبؤ ---
+output/
+exports/
